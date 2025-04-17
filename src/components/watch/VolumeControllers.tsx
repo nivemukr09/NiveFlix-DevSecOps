@@ -1,7 +1,6 @@
 import { Stack } from "@mui/material";
 import Slider from "@mui/material/Slider";
 import { styled } from "@mui/material/styles";
-import { SliderUnstyledOwnProps } from "@mui/base/SliderUnstyled";
 import VolumeUpIcon from "@mui/icons-material/VolumeUp";
 import VolumeOffIcon from "@mui/icons-material/VolumeOff";
 import PlayerControlButton from "./PlayerControlButton";
@@ -34,27 +33,24 @@ const StyledSlider = styled(Slider)({
   },
 });
 
+type VolumeControllersProps = {
+  value: number;
+  muted: boolean;
+  handleVolumeToggle: React.MouseEventHandler<HTMLButtonElement>;
+  handleVolume: (event: Event, value: number | number[]) => void;
+};
+
 export default function VolumeControllers({
   value,
   handleVolume,
   handleVolumeToggle,
   muted,
-}: {
-  value: number;
-  handleVolume: SliderUnstyledOwnProps["onChange"];
-  handleVolumeToggle: React.MouseEventHandler<HTMLButtonElement>;
-  muted: boolean;
-}) {
+}: VolumeControllersProps) {
   return (
     <Stack
       direction="row"
       alignItems="center"
       spacing={{ xs: 0.5, sm: 1 }}
-      // sx={{
-      //   "&:hover NetflixSlider-root": {
-      //     display: "inline-block",
-      //   },
-      // }}
     >
       <PlayerControlButton onClick={handleVolumeToggle}>
         {!muted ? <VolumeUpIcon /> : <VolumeOffIcon />}
@@ -70,3 +66,4 @@ export default function VolumeControllers({
     </Stack>
   );
 }
+

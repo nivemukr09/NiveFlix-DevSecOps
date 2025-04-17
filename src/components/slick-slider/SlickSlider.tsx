@@ -66,6 +66,7 @@ interface SlickSliderProps {
   genre: Genre | CustomGenre;
   handleNext: (page: number) => void;
 }
+
 export default function SlickSlider({ data, genre }: SlickSliderProps) {
   const sliderRef = useRef<Slider>(null);
   const [activeSlideIndex, setActiveSlideIndex] = useState(0);
@@ -73,13 +74,13 @@ export default function SlickSlider({ data, genre }: SlickSliderProps) {
   const [isEnd, setIsEnd] = useState(false);
   const theme = useTheme();
 
-  const beforeChange = async (currentIndex: number, nextIndex: number) => {
-    if (currentIndex < nextIndex) {
-      setActiveSlideIndex(nextIndex);
-    } else if (currentIndex > nextIndex) {
+  const beforeChange = (current: number, next: number) => {
+    if (current < next) {
+      setActiveSlideIndex(next);
+    } else if (current > next) {
       setIsEnd(false);
     }
-    setActiveSlideIndex(nextIndex);
+    setActiveSlideIndex(next);
   };
 
   const settings: Settings = {
@@ -89,13 +90,7 @@ export default function SlickSlider({ data, genre }: SlickSliderProps) {
     lazyLoad: "ondemand",
     slidesToShow: 6,
     slidesToScroll: 6,
-    // afterChange: (current) => {
-    //   console.log("After Change", current);
-    // },
     beforeChange,
-    // onEdge: (direction) => {
-    //   console.log("Edge: ", direction);
-    // },
     responsive: [
       {
         breakpoint: 1536,
@@ -132,9 +127,12 @@ export default function SlickSlider({ data, genre }: SlickSliderProps) {
     sliderRef.current?.slickPrev();
   };
 
-  const handleNext = () => {
+  const handleNextClick = () => {
     sliderRef.current?.slickNext();
   };
+
+  const genreId =
+    genre.id ?? genre.name.toLowerCase().replace(/\s+/g, "_");
 
   return (
     <Box sx={{ overflow: "hidden", height: "100%", zIndex: 1 }}>
@@ -148,19 +146,10 @@ export default function SlickSlider({ data, genre }: SlickSliderProps) {
           >
             <NetflixNavigationLink
               variant="h5"
-              to={`/genre/${
-                genre.id || genre.name.toLowerCase().replace(" ", "_")
-              }`}
-              sx={{
-                display: "inline-block",
-                fontWeight: 700,
-              }}
-              onMouseOver={() => {
-                setShowExplore(true);
-              }}
-              onMouseLeave={() => {
-                setShowExplore(false);
-              }}
+              to={`/genre/${genreId}`}
+              sx={{ display: "inline-block", fontWeight: 700 }}
+              onMouseOver={() => setShowExplore(true)}
+              onMouseLeave={() => setShowExplore(false)}
             >
               {`${genre.name} Movies `}
               <MotionContainer
@@ -181,7 +170,7 @@ export default function SlickSlider({ data, genre }: SlickSliderProps) {
             <CustomNavigation
               isEnd={isEnd}
               arrowWidth={ARROW_MAX_WIDTH}
-              onNext={handleNext}
+              onNext={handleNextClick}
               onPrevious={handlePrevious}
               activeSlideIndex={activeSlideIndex}
             >
@@ -192,7 +181,7 @@ export default function SlickSlider({ data, genre }: SlickSliderProps) {
                 theme={theme}
               >
                 {data.results
-                  .filter((i) => !!i.backdrop_path)
+                  .filter((item) => !!item.backdrop_path)
                   .map((item) => (
                     <SlideItem key={item.id} item={item} />
                   ))}
@@ -204,3 +193,4 @@ export default function SlickSlider({ data, genre }: SlickSliderProps) {
     </Box>
   );
 }
+

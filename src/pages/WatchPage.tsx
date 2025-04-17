@@ -41,20 +41,15 @@ export function Component() {
       preload: "metadata",
       autoplay: true,
       controls: false,
-      // responsive: true,
-      // fluid: true,
       width: windowSize.width,
       height: windowSize.height,
       sources: [
         {
-          // src: videoData?.video,
-          // src: "https://d2zihajmogu5jn.cloudfront.net/bipbop-advanced/bipbop_16x9_variant.m3u8",
           src: "https://bitmovin-a.akamaihd.net/content/sintel/hls/playlist.m3u8",
           type: "application/x-mpegurl",
         },
       ],
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [windowSize]);
 
   const handlePlayerReady = function (player: Player): void {
@@ -88,10 +83,11 @@ export function Component() {
     });
   };
 
-  const handleVolumeChange: SliderUnstyledOwnProps["onChange"] = (_, value) => {
-    playerRef.current?.volume((value as number) / 100);
+  const handleVolumeChange: SliderUnstyledOwnProps["onChange"] = (_: Event | null, value: number | number[]) => {
+    const volumeValue = Array.isArray(value) ? value[0] : value;
+    playerRef.current?.volume(volumeValue / 100);
     setPlayerState((draft) => {
-      return { ...draft, volume: (value as number) / 100 };
+      return { ...draft, volume: volumeValue / 100 };
     });
   };
 
@@ -270,3 +266,4 @@ export function Component() {
 }
 
 Component.displayName = "WatchPage";
+
