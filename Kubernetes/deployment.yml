@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: niveflix-app
+  labels:
+    app: niveflix-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: niveflix-app
+  template:
+    metadata:
+      labels:
+        app: niveflix-app
+    spec:
+      containers:
+      - name: niveflix-app
+        image: nivemuthu09/niveflix:latest
+        ports:
+        - containerPort: 80

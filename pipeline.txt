@@ -1,0 +1,122 @@
+pipeline {
+    agent any
+    tools {
+        jdk 'jdk17'
+        nodejs 'node16'
+    }
+    environment {
+        SCANNER_HOME = tool 'sonar-scanner'
+    }
+    stages {
+        stage('Clean Workspace') {
+            steps {
+                cleanWs()
+            }
+        }
+
+        stage('Checkout from Git') {
+            steps {
+                git branch: 'main', url: 'https://github.com/nivemukr09/NiveFlix-DevSecOps.git'
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv('sonar-server') {
+                    sh ''' 
+                        $SCANNER_HOME/bin/sonar-scanner \
+                        -Dsonar.projectName=NiveFlix \
+                        -Dsonar.projectKey=NiveFlix
+                    '''
+                }
+            }
+        }
+
+        stage('Quality Gate') {
+            steps {
+                script {
+                    waitForQualityGate abortPipeline: false, credentialsId: 'Sonar-token'
+                }
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                sh 'npm install'
+            }
+        }
+
+        stage('OWASP Dependency Check') {
+            steps {
+                dependencyCheck additionalArguments: '--scan ./ --disableYarnAudit --disableNodeAudit', odcInstallation: 'DP-Check'
+                dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
+            }
+        }
+
+        stage('Trivy FS Scan') {
+            steps {
+                sh 'trivy fs . > trivyfs.txt'
+            }
+        }
+
+        stage('Docker Build & Push') {
+            steps {
+                script {
+                    withDockerRegistry(credentialsId: 'docker', toolName: 'docker') {
+                        sh '''
+                            docker build --build-arg TMDB_V3_API_KEY=<yourtmdbapikey> -t niveflix .
+                            docker tag niveflix nivemuthu09/niveflix:latest
+                            docker push nivemuthu09/niveflix:latest
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage('Trivy Image Scan') {
+            steps {
+                sh 'trivy image nivemuthu09/niveflix:latest > trivyimage.txt'
+            }
+        }
+
+        stage('Deploy to Container') {
+            steps {
+                sh 'docker run -d -p 8081:80 nivemuthu09/niveflix:latest'
+            }
+        }
+
+        stage('Deploy to Kubernetes') {
+            steps {
+                script {
+                    dir('k8s') {
+                        withKubeConfig(
+                            credentialsId: 'k8s', 
+                            contextName: '', 
+                            clusterName: '', 
+                            serverUrl: '', 
+                            caCertificate: '', 
+                            namespace: '', 
+                            restrictKubeConfigAccess: false
+                        ) {
+                            sh 'kubectl apply -f deployment.yml'
+                            sh 'kubectl apply -f service.yml'
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            emailext attachLog: true,
+                subject: "'${currentBuild.result}' Build: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                body: """<b>Project:</b> ${env.JOB_NAME}<br/>
+                         <b>Build Number:</b> ${env.BUILD_NUMBER}<br/>
+                         <b>Status:</b> ${currentBuild.result}<br/>
+                         <b>Console Output:</b> <a href="${env.BUILD_URL}">${env.BUILD_URL}</a><br/>""",
+                to: 'iambatmanthegoat@gmail.com',  // 🔁 Change this to your own email
+                attachmentsPattern: 'trivyfs.txt,trivyimage.txt'
+        }
+    }
+}
