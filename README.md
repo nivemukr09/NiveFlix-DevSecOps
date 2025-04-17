@@ -1,4 +1,4 @@
-# 🎬 NiveFlix-DevSecOps Project 🚀
+﻿# 🎬 NiveFlix-DevSecOps Project 🚀
 
 🛠️ **NiveFlix** is a Netflix-inspired UI project, customized and containerized by me for learning and practicing DevSecOps, CI/CD, and Infrastructure as Code (IaC). This project showcases end-to-end automation using modern DevOps tools and cloud-native technologies.
 
@@ -12,6 +12,7 @@
 - Provision an EC2 instance on AWS with Ubuntu 22.04.
 - Connect to the instance using SSH.
 
+
 **Step 2: Clone the Code:**
 
 - Update all the packages and then clone the code.
@@ -20,6 +21,8 @@
     ```bash
     git clone https://github.com/nivemukr09/NiveFlix-DevSecOps.git
     ```
+
+
     
 
 **Step 3: Install Docker and Run the App Using a Container:**
@@ -35,11 +38,13 @@
     sudo chmod 777 /var/run/docker.sock
     ```
     
+
 - Build and run your application using Docker containers:
     
     ```bash
     docker build -t niveflix .
     docker run -d --name niveflix -p 8081:80 niveflix:latest
+
     
     #to delete
     docker stop <containerid>
@@ -57,6 +62,10 @@ It will show an error cause you need API key
 - Create a new API key by clicking "Create" and accepting the terms and conditions.
 - Provide the required basic details and click "Submit."
 - You will receive your TMDB API key.
+
+
+
+
 
 Now recreate the Docker image with your api key:
 ```
@@ -732,6 +741,12 @@ To deploy an application with ArgoCD, you can follow these steps, which I'll out
 
 4. **Access your Application**
    - To Access the app make sure port 30007 is open in your security group and then open a new tab paste your NodeIP:30007, your app should be running.
+
+
+
+
+
+
 
 **Phase 7: Cleanup**
 
